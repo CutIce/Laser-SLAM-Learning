@@ -7,6 +7,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 
+#include <vector>
 using namespace std;
 
 string scan_match_file = "./scan_match.txt";
@@ -83,6 +84,9 @@ int main(int argc, char** argv)
             last_rt = s_t;
             // 填充A, b矩阵
             //TODO: (3~5 lines)
+            A(id_s, 0) = w_Lt;
+            A(id_s, 1) = w_Rt;
+            b(id_s) = s_th;
             //end of TODO
             w_Lt = 0;
             w_Rt = 0;
@@ -92,6 +96,10 @@ int main(int argc, char** argv)
     // 进行最小二乘求解
     Eigen::Vector2d J21J22;
     //TODO: (1~2 lines)
+    Eigen::Matrix2d ATA;
+    ATA = A.transpose() * A;
+    J21J22 = ATA.inverse() * A.transpose() * b;
+
     //end of TODO
     const double &J21 = J21J22(0);
     const double &J22 = J21J22(1);
@@ -142,6 +150,10 @@ int main(int argc, char** argv)
             last_rt = s_t;
             // 填充C, S矩阵
             //TODO: (4~5 lines)
+            C(id_s * 2 + 0) = cx;
+            C(id_s * 2 + 1) = cy;
+            S(id_s * 2 + 0) = s_x;
+            S(id_s * 2 + 1) = s_y;
             //end of TODO
             cx = 0;
             cy = 0;
@@ -154,6 +166,9 @@ int main(int argc, char** argv)
     double r_L;
     double r_R;
     //TODO: (3~5 lines)
+    b_wheel = (C.transpose() * C).inverse() * C.transpose() * S;
+    r_L = -J21 * b_wheel;
+    r_R =  J22 * b_wheel; 
     //end of TODO
     cout << "b: " << b_wheel << endl;
     cout << "r_L: " << r_L << endl;
