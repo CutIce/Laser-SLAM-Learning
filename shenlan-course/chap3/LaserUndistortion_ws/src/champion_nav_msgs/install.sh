@@ -7,5 +7,5 @@ ip=$(ip addr show eth0 | grep -o 'inet [0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+' | gre
 export ROS_MASTER_URI="http://$ip:11311" #网卡ip
 
 export ROS_HOSTNAME=$ip
-source /opt/ros/noetic/setup.bash
-catkin_make -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install
+source /opt/ros/melodic/setup.zsh
+catkin_make -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
