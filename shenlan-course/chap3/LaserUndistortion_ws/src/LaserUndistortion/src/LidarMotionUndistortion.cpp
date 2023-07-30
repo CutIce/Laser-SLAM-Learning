@@ -182,15 +182,6 @@ public:
         return true;
     }
 
-    Eigen::Matrix3d v2r2d(double& _x, double& _y, double& _theta) {
-        Eigen::Matrix3d res;
-        res <<  cos(_theta), -sin(_theta), _x,
-                sin(_theta),  cos(_theta), _y,
-                          0,            0,  1;
-        return res;
-    }
-
-
     /**
      * @brief Lidar_MotionCalibration
      *        激光雷达运动畸变去除分段函数;
@@ -204,58 +195,40 @@ public:
      * @param beam_number           本分段的激光点数量
      */
     void Lidar_MotionCalibration(
-            tf::Stamped<tf::Pose> frame_base_pose,
-            tf::Stamped<tf::Pose> frame_start_pose,
-            tf::Stamped<tf::Pose> frame_end_pose,
+            tf::Stamped<tf::Pose> frame_odom_base,
+            tf::Stamped<tf::Pose> frame_odom_start,
+            tf::Stamped<tf::Pose> frame_odom_end,
             std::vector<double>& ranges,
             std::vector<double>& angles,
             int startIndex,
             int& beam_number)
     {
         //TODO
-        tf::Vector3 p_odom_s = frame_start_pose.getOrigin();
-        tf::Quaternion q_odom_s = frame_start_pose.getRotation();
+        tf::Vector3 p_odom_s = frame_odom_start.getOrigin();
+        tf::Quaternion q_odom_s = frame_odom_start.getRotation();
 
-        tf::Vector3 p_odom_e = frame_end_pose.getOrigin();
-        tf::Quaternion q_odom_e = frame_end_pose.getRotation();
+        tf::Vector3 p_odom_e = frame_odom_end.getOrigin();
+        tf::Quaternion q_odom_e = frame_odom_end.getRotation();
 
         int cnt = beam_number - 1;
         double step = 1 / cnt;
 
-        double x_odom_s = p_odom_s.x();
-        double y_odom_s = p_odom_s.y();
-        double theta_odom_s = tf::getYaw(q_odom_s);
-
-        Eigen::Matrix3d T_odom_s;
-        T_odom_s = v2r2d(x_odom_s, y_odom_s, theta_odom_s);
-
         for (int i = 1; i < beam_number; ++i) {
             tf::Vector3     p_odom_i = p_odom_s.lerp(p_odom_e, step * i);
             tf::Quaternion  q_odom_i = q_odom_e.slerp(q_odom_e, step * i);
-
-            double x_odom_i = p_odom_i.x();
-            double y_odom_i = p_odom_i.y();
-            double theta_odom_i = tf::getYaw(q_odom_i);
-
-            Eigen::Matrix3d T_odom_i;
-            T_odom_i = v2r2d(x_odom_i, y_odom_i, theta_odom_i);
+            tf::Pose frame_odom_i = tf::Transform(q_odom_i, p_odom_i);
             
-            Eigen::Matrix3d T_i_point;
             double r_i_p = ranges[startIndex + i];
             double theta_i_p = angles[startIndex + i];
             double x_i_p = r_i_p * cos(theta_i_p);
             double y_i_p = r_i_p * sin(theta_i_p);
-            T_i_point = v2r2d(x_i_p, y_i_p, theta_i_p);
+            tf::Vector3 p_i_p(x_i_p, y_i_p, 1);
 
-            Eigen::Matrix3d T_s_p;
-            T_s_p = T_odom_s.inverse() * T_odom_i * T_i_point;
+            tf::Pose frame_base_i = frame_odom_base.inverse() * frame_odom_i;
+            tf::Vector3 p_b_p = frame_base_i * p_i_p;
 
-            double x_s_p = T_s_p(0, 2);
-            double y_s_p = T_s_p(1, 2);
-            double theta_s_p = atan2(T_s_p(1, 0), T_s_p(0, 0));
-
-            ranges[startIndex + i] = sqrt(x_s_p * x_s_p + y_s_p * y_s_p);
-            angles[startIndex + i] = theta_s_p;
+            ranges[startIndex + i] = sqrt(p_b_p.x() * p_b_p.x() + p_b_p.y() * p_b_p.y());
+            angles[startIndex + i] = atan2(p_b_p.y(), p_b_p.x());
 
         }
         //end of TODO
