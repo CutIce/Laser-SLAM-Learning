@@ -220,7 +220,7 @@ public:
         tf::Quaternion q_odom_e = frame_end_pose.getRotation();
 
         int cnt = beam_number - 1;
-        int step = 1 / cnt;
+        double step = 1 / cnt;
 
         double x_odom_s = p_odom_s.x();
         double y_odom_s = p_odom_s.y();
