@@ -356,21 +356,18 @@ Eigen::Vector3d  cal_delta_distence(Eigen::Vector3d odom_pose)
     now_pos = odom_pose;
 
     //TODO:
-    Eigen::Matrix3d t_last, t_now, t_last_now;
+    Eigen::Matrix3d T_last, T_now, T_last_now;
+    T_last << cos(last_pos(2)), -sin(last_pos(2)), last_pos(0),
+    sin(last_pos(2)), cos(last_pos(2)), last_pos(1),
+    0, 0, 1;
+    T_now << cos(now_pos(2)), -sin(now_pos(2)), now_pos(0),
+    sin(now_pos(2)), cos(now_pos(2)), now_pos(1),
+    0, 0, 1;
+    T_last_now = T_last.inverse() * T_now;
+    d_pos << T_last_now(0, 2),
+    T_last_now(1, 2),
+    atan2(T_last_now(1, 0), T_last_now(0, 0));
 
-    t_last <<   cos(last_pos(2)), -sin(last_pos(2)), last_pos(0),
-                sin(last_pos(2)),  cos(last_pos(2)), last_pos(1),
-                0, 0, 1;
-
-    t_now <<    cos(now_pos(2)), -sin(now_pos(2)), now_pos(0),
-                sin(now_pos(2)),  cos(now_pos(2)), now_pos(1),
-                0, 0, 1;
-
-    t_last_now = t_last.inverse() * t_now;
-
-    d_pos <<    t_last_now(0, 2),
-                t_last_now(1, 2),
-                atan2(t_last_now(1, 0), t_last_now(0, 0));
     //end of TODO:
 
     return d_pos;

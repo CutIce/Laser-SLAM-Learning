@@ -26,23 +26,19 @@ bool OdomCalib::Add_Data(Eigen::Vector3d Odom,Eigen::Vector3d scan)
     if(now_len<INT_MAX)
     {
         //TODO: 构建超定方程组
-        A(now_len % data_len *3 + 0, 0) = Odom(0);
-        A(now_len % data_len *3 + 0, 1) = Odom(1);
-        A(now_len % data_len *3 + 0, 2) = Odom(2);
+        A(now_len % data_len * 3, 0) = Odom(0);
+        A(now_len % data_len * 3, 1) = Odom(1);
+        A(now_len % data_len * 3, 2) = Odom(2);
+        A(now_len % data_len * 3 + 1, 3) = Odom(0);
+        A(now_len % data_len * 3 + 1, 4) = Odom(1);
+        A(now_len % data_len * 3 + 1, 5) = Odom(2);
+        A(now_len % data_len * 3 + 2, 6) = Odom(0);
+        A(now_len % data_len * 3 + 2, 7) = Odom(1);
+        A(now_len % data_len * 3 + 2, 8) = Odom(2);
 
-        A(now_len % data_len *3 + 1, 3) = Odom(0);
-        A(now_len % data_len *3 + 1, 4) = Odom(1);
-        A(now_len % data_len *3 + 1, 5) = Odom(2);
-
-        A(now_len % data_len *3 + 2, 6) = Odom(0);
-        A(now_len % data_len *3 + 2, 7) = Odom(1);
-        A(now_len % data_len *3 + 2, 8) = Odom(2);
-
-
-        b(now_len % data_len * 3 + 0) = scan(0);
+        b(now_len % data_len * 3) = scan(0);
         b(now_len % data_len * 3 + 1) = scan(1);
         b(now_len % data_len * 3 + 2) = scan(2);
-
         //end of TODO
         now_len++;
         return true;
@@ -63,16 +59,13 @@ Eigen::Matrix3d OdomCalib::Solve()
     Eigen::Matrix3d correct_matrix;
 
     //TODO: 求解线性最小二乘
-    Eigen::MatrixXd ATA, ATb;
-    ATA = A.transpose() * A;
-    ATb = A.transpose() * b;
-
-    Eigen::VectorXd x;
-    x = ATA.inverse() * ATb;
-
-    correct_matrix <<   x(0), x(1), x(2),
-                        x(3), x(4), x(5),
-                        x(6), x(7), x(8);
+    Eigen::VectorXd x(9);
+    x.setZero();
+    x = A.colPivHouseholderQr().solve(b);
+    // x = (A.transpose() * A).inverse() * A.transpose() * b;
+    correct_matrix << x(0), x(1), x(2),
+    x(3), x(4), x(5),
+    x(6), x(7), x(8);
     //end of TODO
 
     return correct_matrix;
