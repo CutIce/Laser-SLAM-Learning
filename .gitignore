@@ -1573,3 +1573,5 @@ shenlan-course/chap3/LaserUndistortion_ws/devel/share/gennodejs/ros/champion_nav
 shenlan-course/chap3/LaserUndistortion_ws/devel/share/gennodejs/ros/champion_nav_msgs/msg/ChampionNavLaserScan.js
 shenlan-course/chap3/LaserUndistortion_ws/devel/share/roseus/ros/champion_nav_msgs/manifest.l
 shenlan-course/chap3/LaserUndistortion_ws/devel/share/roseus/ros/champion_nav_msgs/msg/ChampionNavLaserScan.l
+shenlan-course/chap4/icpMatcherProject/src/bag/imls_icp.bag
+shenlan-course/chap4/imlsMatcherProject/src/bag/imls_icp.bag
